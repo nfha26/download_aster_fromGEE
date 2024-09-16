@@ -1,0 +1,28 @@
+// Define the bounding box coordinates (replace with your actual bbox coordinates)
+var bbox = ee.Geometry.Rectangle([113.2642462,-8.5584451,114.0434187,-7.9682727]);
+
+// Load the ASTER Surface Reflectance dataset
+var aster = ee.ImageCollection('ASTER/AST_L1T_003');
+
+// Filter the ASTER dataset by the bounding box and a specific date range
+var asterFiltered = aster.filterBounds(bbox)
+                         .filterDate('2021-01-01', '2021-12-31');
+
+// Select the bands of interest (NIR, Red, SWIR)
+var selectedBands = asterFiltered.select(['B01', 'B02','B3N','B04', 'B05', 'B06', 'B07','B08','B09','B10','B11','B12','B13','B14']);
+
+// Reduce the collection by taking the median pixel value
+var medianImage = selectedBands.median();
+
+// Define export parameters
+Export.image.toDrive({
+  image: medianImage,
+  description: 'ASTER_jember',
+  scale: 30, // ASTER spatial resolution
+  region: bbox,
+  fileNamePrefix: 'aster_jember',
+  folder: 'GEE_Exports' // Adjust folder name as needed
+});
+
+// Print the info
+print('Exporting ASTER Image:', medianImage);
